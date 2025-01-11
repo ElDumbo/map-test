@@ -1,0 +1,14 @@
+npx create-react-app memecoin-adventure-park
+cd memecoin-adventure-park
+npm install react-router-dom @heroicons/react tailwindcss 
+rm -rf node_modules
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+npm start 
+npx tailwindcss init 
+mkdir -p public
+curl https://raw.githubusercontent.com/facebook/create-react-app/main/packages/cra-template/template/public/favicon.ico > public/favicon.ico 
+mkdir -p src/components src/pages public
+ls -la src/
+ls -la public/ 

@@ -1,0 +1,204 @@
+﻿Memecoin Adventure Park: Full Development Documentation
+1. Project Overview
+* Name: Memecoin Adventure Park
+* Description: A decentralized gaming platform where users can play casino-style games using ERC-20 tokens. The platform integrates liquidity pools (LPs) for each game and token pairing, with winnings and losses flowing back into the LPs. This means that when players lose their bets, the tokens they wager are added back into the LP for that specific game/token pairing. When players win bets, the tokens are withdrawn from the LP to pay out the winnings. The LP acts as the "house," growing or shrinking based on the outcomes of the bets. Additionally, the house edge is split evenly: half of the edge goes to the LP, and the other half is sent to a separate wallet controlled by the platform owner. The designated wallet address for this purpose is 0x00000000000000000000000235f48d21dc84ffce. For example, in Blackjack with a 1% house edge, 0.5% of each bet contributes to the LP, while the other 0.5% is directed to the owner’s wallet. This applies consistently across all games and tokens. Withdrawals by users (except for bet payouts) are prohibited to keep the LP self-sustaining.
+* Goal: Build a proof-of-concept (PoC) platform with three games—Roulette, Blackjack, and Slots—with decentralized LPs and on-chain randomness.
+* Target Platform: Web-based for desktop and mobile, with eventual conversion to a Telegram mini-app.
+________________
+
+
+2. Core Features
+* Supported Games:
+
+   * Roulette: Classic (non-European or American style).
+   * Blackjack: Standard casino rules using 4 decks.
+   * Slots: Simple 3-reel slot machine, styled after classic Vegas slot machines, with a 95% RTP approximation.
+   * Token Support: ERC-20 tokens only, starting with USDC and ETH. Initial deployment will focus on testnet, allowing LPs for these tokens to be set up for testing.
+
+   * Wallet Integration: Users connect via Metamask.
+
+   * Platform Capacity: Able to handle 100+ concurrent users.
+
+________________
+
+
+3. Game Mechanics
+Roulette
+      * Gameplay:
+      * Full range of standard Roulette bets (e.g., straight, split, street, corner, etc.) is supported.
+      * Users select a bet type (e.g., color, number, odd/even).
+      * After bet confirmation, an animation plays (ball spinning) for 5-7 seconds while the transaction is signed on-chain.
+      * Results and payouts are displayed immediately post-animation.
+Blackjack
+      * Gameplay:
+      * Standard casino rules apply, following common practices such as those used in London casinos.
+      * Splits and doubling down are supported; insurance bets are omitted for simplicity.
+      * Standard casino rules apply, following common practices such as those used in London casinos.
+      * Uses 4 decks for card draws.
+      * Players confirm bets via transaction signing.
+      * Basic animations simulate card dealing and game progression during signing delays. These animations will be placeholders that fit the game theme without overcomplicating design.
+      * Results are displayed once the game concludes.
+Slots
+      * Gameplay:
+      * Simple and classic, styled after Vegas slot machines.
+      * Focused on ease of implementation for PoC without overly complex mechanics.
+      * Players spin a 3-reel slot machine.
+      * RTP is set to approximately 95% by adjusting payouts (e.g., chance of 3 matching symbols is 10:1, but payout is 9:1).
+      * Animations simulate the spinning reels for 5-7 seconds during transaction signing.
+      * Results and winnings are displayed post-animation.
+________________
+
+
+4. Liquidity Pools (LPs)
+Structure
+      * Each game/token pairing has a separate LP.
+      * LPs are decentralized; users can contribute or "top up" funds directly via the UI, but only for the relevant token. For example, if a new LP is created for $DUMB token, only $DUMB can be added to that LP. Unsupported tokens will not be accepted. This functionality will be available under the 'Expert Mode' feature to keep the main interface simple for standard users.
+      * Withdrawals are prohibited.
+Bet Limits
+      * Smart contracts ensure no single bet can exceed 25% of the LP size.
+      * As LP sizes grow or shrink, bet limits dynamically adjust.
+________________
+
+
+5. User Experience (UX)
+Flow
+      1. Wallet Connection: Users connect their Metamask wallet.
+      2. Token Selection: Users select an ERC-20 token to play with.
+      3. Game Selection: Users choose a game (Roulette, Blackjack, Slots).
+      4. Gameplay: Users place bets, confirm transactions, and watch animations while waiting for results.
+      5. Results: Winnings are distributed automatically based on game outcomes.
+Features
+      * Bet History: Users can view their bet history, which is stored both on-chain for future-proofing and in local storage for quick access during the PoC phase. This ensures short-term usability while maintaining long-term scalability.
+      * Mobile Support: The platform will include a responsive, mobile-first design. Features will include collapsed menus, easily clickable buttons, minimal information on the screen, and optimized layouts for smaller devices.
+      * Recent Results: The last 10-20 outcomes are displayed for each game.
+      * Expert Mode
+      * This feature is available via a toggle in the settings menu.: A toggleable feature that shows LP sizes for each token/game pairing, updated in real-time by fetching blockchain data.
+________________
+
+
+6. Randomization
+Initial Approach
+      * Use block time as the seed for randomness. This is a temporary solution for the PoC phase and will be replaced with a more robust system in future updates. While this approach is not cryptographically secure, it is acceptable for the PoC phase.
+Long-Term Goal
+      * Integrate on-chain randomness via Cadence for provably fair outcomes.
+________________
+
+
+7. Smart Contracts
+Steps to Ensure Clean Implementation
+      * AI Clarification Points:
+      * Always ask for clarification on variables that are not explicitly defined in the document. Examples:
+      * If additional tokens need to be supported beyond USDC and ETH.
+      * If LP contribution limits or rules require further specifics.
+      * For unclear payout ratios or RNG logic, confirm assumptions before implementation.
+      * Do not assume values for wallet addresses, house edges, or game rules unless explicitly provided.
+      * Define Core Variables:
+      * Establish constants (e.g., wallet address for house edge, supported tokens, max bet sizes).
+      * Implement a robust structure for game rules to avoid errors in payouts or edge calculations.
+      * Modular Smart Contracts:
+      * Separate contracts for each game and LP management.
+      * Create a shared utility library for common functions (e.g., house edge split, RNG logic).
+      * Iterative Development:
+      * Build one game at a time, starting with the simplest (e.g., Slots), to test contract and UI integration.
+      * Ensure all games properly split winnings between LPs and the designated wallet.
+House Edge Management
+      * Implement logic to split the house edge evenly:
+      * 50% of the edge goes to the LP.
+      * 50% of the edge is sent to a designated wallet address controlled by the platform owner.
+      * Ensure this logic is integrated into the payout calculations for all games (Roulette, Blackjack, Slots).
+Key Features
+      * Handle bets, payouts, and LP management.
+      * Allow users to contribute to LPs via the UI.
+      * Dynamically adjust bet limits based on LP size.
+Coding Standards
+      * Contracts must include clear documentation and detailed comments for audit readiness.
+      * Designed for scalability and security to handle 100+ concurrent users.
+House Edge Management
+      * Implement logic to split the house edge evenly:
+      * 50% of the edge goes to the LP.
+      * 50% of the edge is sent to a designated wallet address controlled by the platform owner.
+      * Ensure this logic is integrated into the payout calculations for all games (Roulette, Blackjack, Slots).
+Key Features
+      * Handle bets, payouts, and LP management.
+      * Allow users to contribute to LPs via the UI.
+      * Dynamically adjust bet limits based on LP size.
+Coding Standards
+      * Contracts must include clear documentation and detailed comments for audit readiness.
+      * Designed for scalability and security to handle 100+ concurrent users.
+________________
+
+
+8. Frontend
+Requirements
+      * Clean and simple UI for desktop and mobile.
+      * Wallet connection via Metamask.
+      * Animations for:
+      * Roulette (ball spinning).
+      * Blackjack (card dealing).
+      * Slots (reel spinning).
+      * Responsive design to support mobile usage.
+      * Validate token inputs in the UI to prevent unsupported tokens from being added to LPs.
+________________
+
+
+9. Backend
+Gas Payment
+      * Gas fees will be covered directly by the user. Flow Wallet integration will be used to streamline the process and manage transactions effectively.
+Requirements
+Requirements
+      * Handle user sessions and wallet connections.
+      * Track game results and bet history.
+      * Interface with smart contracts to manage transactions and payouts.
+________________
+
+
+10. Security and Troubleshooting
+AI Guidance for Troubleshooting
+      * Clarification Requests: AI should always seek guidance from the user for:
+      * Unexpected results in payouts or LP adjustments.
+      * Ambiguities in randomness calculations or game animations.
+      * Transparent Debugging: Clearly log actions and outputs for each feature to aid in identifying issues quickly.
+Basic Security Measures
+      * Prevent exploits by logging clear transactions and maintaining data integrity.
+      * Code audit required before public launch to ensure safety.
+Troubleshooting Steps
+      1. Smart Contract Issues:
+
+         * If payouts are incorrect, verify house edge calculations and LP size adjustments.
+         * Check if the wallet receiving the house edge split is being updated correctly.
+         2. Randomization Issues:
+
+            * Test randomness outputs for patterns.
+            * Ensure block time seeds produce a sufficiently random distribution for results.
+            3. Frontend/Backend Sync:
+
+               * If bets or results are delayed, check for network latency or failed transaction signing.
+               * Log all interactions with the blockchain for debugging (e.g., bet placement, payouts).
+               4. Liquidity Pool Imbalances:
+
+                  * If LPs deplete too quickly, verify max bet limits and ensure the 25% rule is enforced.
+                  5. User Issues:
+
+                     * If wallets fail to connect, check for compatibility with Metamask or Web3 integrations.
+                     * Provide clear error messages for unsupported tokens or invalid bets.
+                     * Basic anti-cheat measures to prevent exploits.
+                     * Clear transaction logging.
+                     * Code audit required before public launch.
+________________
+
+
+11. Roadmap
+Phase 1: PoC Development
+                     * Implement Roulette, Blackjack, and Slots.
+                     * Integrate wallet connection and LP management.
+                     * Develop basic animations and RNG logic.
+                     * Ensure scalability for 100+ concurrent users.
+Phase 2: Advanced Features
+                     * Add on-chain randomness via Cadence.
+                     * Enhance animations and UI design.
+                     * Introduce Expert Mode.
+Phase 3: Testing and Deployment
+                     * Deploy smart contracts on a testnet.
+                     * Conduct scalability and security tests.
+                     * Launch PoC platform for public testing.
+________________
