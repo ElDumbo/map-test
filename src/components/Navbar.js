@@ -12,10 +12,13 @@ function Navbar() {
   return (
     <nav className="bg-gray-800 p-4">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="flex space-x-4">
-          <Link to="/" className="text-white font-bold">
-            Memecoin Adventure Park
-          </Link>
+        <Link to="/" className="text-xl font-bold">
+          Memecoin Adventure Park
+        </Link>
+        
+        <div className="flex items-center space-x-4">
+          <Link to="/learn">Learn</Link>
+          <Link to="/liquidity-pools">Liquidity Pools</Link>
           <Link to="/slots" className="text-gray-300 hover:text-white">
             Slots
           </Link>

@@ -35,12 +35,11 @@ function Home() {
         >
           🌊 Liquidity Pools
         </button>
-        <button
-          onClick={() => window.open('/learn', '_blank')}
-          className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105"
-        >
-          📚 Learn More
-        </button>
+        <Link to="/learn" className="inline-block">
+          <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105">
+            📚 Learn More
+          </button>
+        </Link>
         <button
           onClick={() => window.open('https://twitter.com/elonmusk', '_blank')}
           className="px-8 py-4 bg-gradient-to-r from-sky-400 to-blue-500 rounded-lg text-xl font-bold hover:from-sky-500 hover:to-blue-600 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
