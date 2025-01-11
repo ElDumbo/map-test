@@ -1,9 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TOKENS, formatTokenAmount, calculateMaxBet } from '../config/tokens';
-
-const ROULETTE_NUMBERS = [
-  0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
-];
 
 const BETTING_OPTIONS = {
   numbers: { type: 'straight', payout: 35 },
@@ -26,8 +22,77 @@ function Roulette() {
   const [selectedToken, setSelectedToken] = useState('USDC');
   const [showTokenSelect, setShowTokenSelect] = useState(false);
 
-  // Calculate max bet based on LP size
   const maxBet = calculateMaxBet(selectedToken, 'roulette');
+
+  const placeBet = (betType, value) => {
+    if (isSpinning) return;
+    
+    const totalCurrentBets = selectedBets.reduce((sum, bet) => sum + bet.amount, 0);
+    if (totalCurrentBets + currentBet > balance) {
+      setMessage('Insufficient balance!');
+      return;
+    }
+
+    setSelectedBets([...selectedBets, { type: betType, value, amount: currentBet }]);
+    setMessage('');
+  };
+
+  const clearBets = () => {
+    if (!isSpinning) {
+      setSelectedBets([]);
+      setMessage('');
+    }
+  };
+
+  const spin = () => {
+    if (selectedBets.length === 0) {
+      setMessage('Place at least one bet!');
+      return;
+    }
+
+    const totalBet = selectedBets.reduce((sum, bet) => sum + bet.amount, 0);
+    if (totalBet > balance) {
+      setMessage('Insufficient balance!');
+      return;
+    }
+
+    setIsSpinning(true);
+    setMessage('');
+    setLastWin(0);
+    setBalance(prev => prev - totalBet);
+
+    const spinInterval = setInterval(() => {
+      setResult(Math.floor(Math.random() * 37));
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(spinInterval);
+      const finalResult = Math.floor(Math.random() * 37);
+      setResult(finalResult);
+      setIsSpinning(false);
+      
+      let totalWon = 0;
+      selectedBets.forEach(bet => {
+        if (
+          (bet.type === 'number' && parseInt(bet.value) === finalResult) ||
+          (bet.type === 'color' && BETTING_OPTIONS[bet.value].numbers.includes(finalResult)) ||
+          (bet.type === 'even/odd' && BETTING_OPTIONS[bet.value].numbers.includes(finalResult)) ||
+          (bet.type === 'half' && BETTING_OPTIONS[bet.value].numbers.includes(finalResult))
+        ) {
+          const winAmount = bet.amount * (BETTING_OPTIONS[bet.type === 'number' ? 'numbers' : bet.value].payout + 1);
+          totalWon += winAmount;
+        }
+      });
+
+      if (totalWon > 0) {
+        setBalance(prev => prev + totalWon);
+        setLastWin(totalWon);
+        setMessage(`You won ${formatTokenAmount(totalWon, selectedToken)} ${selectedToken}!`);
+      } else {
+        setMessage('Better luck next time!');
+      }
+    }, 2000);
+  };
 
   // Filter tokens that support roulette
   const availableTokens = Object.entries(TOKENS).filter(([_, token]) => 
@@ -132,89 +197,6 @@ function Roulette() {
     return BETTING_OPTIONS.red.numbers.includes(number) 
       ? 'bg-red-500 hover:bg-red-600' 
       : 'bg-gray-900 hover:bg-gray-800';
-  };
-
-  const placeBet = (betType, value) => {
-    if (isSpinning) return;
-    
-    const totalCurrentBets = selectedBets.reduce((sum, bet) => sum + bet.amount, 0);
-    if (totalCurrentBets + currentBet > balance) {
-      setMessage('Insufficient balance!');
-      return;
-    }
-
-    setSelectedBets([...selectedBets, { type: betType, value, amount: currentBet }]);
-    setMessage('');
-  };
-
-  const clearBets = () => {
-    if (!isSpinning) {
-      setSelectedBets([]);
-      setMessage('');
-    }
-  };
-
-  const spin = () => {
-    if (selectedBets.length === 0) {
-      setMessage('Place at least one bet!');
-      return;
-    }
-
-    const totalBet = selectedBets.reduce((sum, bet) => sum + bet.amount, 0);
-    if (totalBet > balance) {
-      setMessage('Insufficient balance!');
-      return;
-    }
-
-    setIsSpinning(true);
-    setMessage('');
-    setBalance(prev => prev - totalBet);
-
-    // Simulate wheel spinning
-    let spins = 0;
-    const spinInterval = setInterval(() => {
-      setResult(ROULETTE_NUMBERS[Math.floor(Math.random() * ROULETTE_NUMBERS.length)]);
-      spins++;
-      
-      if (spins > 20) {
-        clearInterval(spinInterval);
-        const finalNumber = ROULETTE_NUMBERS[Math.floor(Math.random() * ROULETTE_NUMBERS.length)];
-        setResult(finalNumber);
-        calculateWinnings(finalNumber);
-        setIsSpinning(false);
-      }
-    }, 100);
-  };
-
-  const calculateWinnings = (winningNumber) => {
-    let totalWin = 0;
-
-    selectedBets.forEach(bet => {
-      let won = false;
-
-      if (bet.type === 'number' && bet.value === winningNumber) {
-        totalWin += bet.amount * BETTING_OPTIONS.numbers.payout;
-        won = true;
-      } else if (bet.type === 'color') {
-        const numbers = BETTING_OPTIONS[bet.value].numbers;
-        if (numbers.includes(winningNumber)) {
-          totalWin += bet.amount * BETTING_OPTIONS[bet.value].payout;
-          won = true;
-        }
-      } else if (BETTING_OPTIONS[bet.value]?.numbers.includes(winningNumber)) {
-        totalWin += bet.amount * BETTING_OPTIONS[bet.value].payout;
-        won = true;
-      }
-    });
-
-    if (totalWin > 0) {
-      setBalance(prev => prev + totalWin);
-      setLastWin(totalWin);
-      setMessage(`🎉 You won ${totalWin} coins! 🎉`);
-    } else {
-      setLastWin(0);
-      setMessage('Better luck next time!');
-    }
   };
 
   return (
